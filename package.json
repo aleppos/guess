@@ -4,7 +4,7 @@
   "description": "Smart bundling",
   "main": "index.js",
   "scripts": {
-    "bootstrap": "npm i && lerna bootstrap",
+    "bootstrap": "yarn && lerna bootstrap",
     "build": "lerna run build",
     "publish": "lerna publish",
     "e2e": "ts-node infra/e2e.ts",
