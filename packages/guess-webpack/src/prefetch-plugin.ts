@@ -122,8 +122,7 @@ export class PrefetchPlugin {
 
     compiler.inputFileSystem = memoryFs;
     compiler.outputFileSystem = memoryFs;
-    compiler.resolvers.normal.fileSystem = memoryFs;
-    compiler.resolvers.context.fileSystem = memoryFs;
+    compiler.intermediateFileSystem = memoryFs;
 
     compiler.run((err: any, stats: any) => {
       if (err) {

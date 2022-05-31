@@ -53,8 +53,7 @@ const alterChunk = (
 
         inMemoryCompiler.inputFileSystem = memoryFs;
         inMemoryCompiler.outputFileSystem = memoryFs;
-        inMemoryCompiler.resolvers.normal.fileSystem = memoryFs;
-        inMemoryCompiler.resolvers.context.fileSystem = memoryFs;
+        inMemoryCompiler.intermediateFileSystem = memoryFs;
 
         inMemoryCompiler.run((err: any, stats: any) => {
           if (err) {
