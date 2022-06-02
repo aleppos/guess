@@ -16,6 +16,7 @@ import {
 } from './utils';
 import { Logger, LogLevel } from '../../common/logger';
 import { AssetObserver, Asset } from './asset-observer';
+import { fs } from 'memfs';
 
 const template = require('lodash.template');
 const { table } = require('table');
@@ -30,15 +31,14 @@ const alterChunk = (
   const promise: Promise<string> = !toBundle
     ? Promise.resolve<string>(toAlter)
     : new Promise<string>((resolve, reject) => {
-        const MemoryFileSystem = require('memory-fs');
-        const memoryFs = new MemoryFileSystem();
+        // const fs = require('fs');
+        // const { fs: memoryFs } = require('memfs');
 
-        memoryFs.mkdirpSync('/src');
-        memoryFs.writeFileSync('/src/index.js', toAlter, 'utf-8');
-        memoryFs.writeFileSync(
+        fs.mkdirpSync('/src');
+        fs.writeFileSync('/src/index.js', toAlter);
+        fs.writeFileSync(
           '/src/guess-aot.js',
           readFileSync(join(__dirname, 'guess-aot.js')).toString(),
-          'utf-8'
         );
 
         const inMemoryCompiler = require('webpack')({
@@ -51,16 +51,27 @@ const alterChunk = (
           }
         });
 
-        inMemoryCompiler.inputFileSystem = memoryFs;
-        inMemoryCompiler.outputFileSystem = memoryFs;
-        inMemoryCompiler.intermediateFileSystem = memoryFs;
+        inMemoryCompiler.inputFileSystem = fs;
+        inMemoryCompiler.outputFileSystem = fs;
+        inMemoryCompiler.intermediateFileSystem = fs;
 
         inMemoryCompiler.run((err: any, stats: any) => {
-          if (err) {
-            reject();
-            throw err;
+          if (err || stats.hasErrors()) {
+            const errors = err ?? (stats.compilation?.errors ?? null)
+            reject(errors);
+          } else {
+            fs.readFile(
+              './output.js',
+              'utf8',
+              (err, data) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(data as string);
+                }
+              }
+            );              
           }
-          resolve(stats.compilation.assets['./output.js'].source() as string);
         });
       });
 
